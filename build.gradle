@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
+}
+
+group 'com.orangomango'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = '17'
+targetCompatibility = '17'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+application {
+    mainModule = 'com.orangomango.flightsim'
+    mainClass = 'com.orangomango.flightsim.MainApplication'
+    applicationDefaultJvmArgs = ["-Dprism.forceGPU=true"]
+}
+
+javafx {
+    version = '17.0.2'
+    modules = ['javafx.controls', 'javafx.media']
+    String path = System.getenv("JAVAFX_PATH")
+    if (path != null && !path.isBlank()){
+        sdk = path
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs')
+}
