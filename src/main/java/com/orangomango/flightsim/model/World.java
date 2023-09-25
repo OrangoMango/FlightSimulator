@@ -15,7 +15,7 @@ public class World{
 	private HashMap<Point3D, Mesh> chunks = new HashMap<>();
 
 	public static final double PLANE_SIZE = 6;
-	public static final int CHUNKS = 5;
+	public static final int CHUNKS = 7;
 
 	public World(Point3D pos){
 		this.position = pos;

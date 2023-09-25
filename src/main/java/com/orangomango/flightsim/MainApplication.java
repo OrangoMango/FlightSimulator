@@ -70,8 +70,7 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.Z, () -> {
 			final double planeSpeed = 0.1;
 			Point3D vector = plane.getAxisSystem().getZaxis().multiply(planeSpeed);
-			plane.move(vector.getX(), vector.getY(), vector.getZ());
-			camera.move(vector);
+			plane.move(camera, vector);
 		}, false);
 
 		engine.addObject(plane.build());
@@ -86,6 +85,8 @@ public class MainApplication extends Application{
 			camera.setRx(0);
 			camera.setRy(0);
 		}, true);
+
+		engine.setOnKey(KeyCode.X, () -> plane.turnPlane(), true);
 
 		final Font mainFont = new Font("sans-serif", 15);
 		engine.setOnUpdate(gc -> {
