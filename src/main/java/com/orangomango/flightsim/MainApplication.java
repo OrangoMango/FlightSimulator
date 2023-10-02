@@ -47,21 +47,12 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(new Point3D(0, speed, 0)), false);
 		// --------------------------------------------------------
 
-		final Point3D pivot = new Point3D(0, -0.5, -1);
 		final double angle = 0.05;
 		engine.setOnKey(KeyCode.UP, () -> {
 			plane.rotateX(-angle);
-			// Rotate camera
-			//Point3D point = rotatePointX(camera.getPosition(), pivot, -angle);
-			//camera.setPosition(point);
-			//camera.setRx(camera.getRx()-angle);
 		}, true);
 		engine.setOnKey(KeyCode.DOWN, () -> {
 			plane.rotateX(angle);
-			// Rotate camera
-			//Point3D point = rotatePointX(camera.getPosition(), pivot, angle);
-			//camera.setPosition(point);
-			//camera.setRx(camera.getRx()+angle);
 		}, true);
 		engine.setOnKey(KeyCode.RIGHT, () -> plane.rotateZ(angle), true);
 		engine.setOnKey(KeyCode.LEFT, () -> plane.rotateZ(-angle), true);
@@ -86,7 +77,7 @@ public class MainApplication extends Application{
 			camera.setRy(0);
 		}, true);
 
-		engine.setOnKey(KeyCode.X, () -> plane.turnPlane(), true);
+		engine.setOnKey(KeyCode.X, () -> plane.rotateY(angle), true);
 
 		final Font mainFont = new Font("sans-serif", 15);
 		engine.setOnUpdate(gc -> {
