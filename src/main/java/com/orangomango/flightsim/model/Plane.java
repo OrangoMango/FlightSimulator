@@ -4,10 +4,10 @@ import javafx.geometry.Point3D;
 
 import java.io.File;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import com.orangomango.rendering3d.meshloader.MeshLoader;
-import com.orangomango.rendering3d.model.Mesh;
-import com.orangomango.rendering3d.model.Camera;
+import com.orangomango.rendering3d.model.*;
 import com.orangomango.rendering3d.Engine3D;
 
 public class Plane{
@@ -34,7 +34,7 @@ public class Plane{
 
 		public void rotateZ(double value){
 			this.xAxis = Plane.rotatePointAxis(this.xAxis, this.zAxis, value, Point3D.ZERO);
-			this.yAxis = Plane.rotatePointAxis(this.yAxis, this.zAxis, value, Point3D.ZERO);
+			//this.yAxis = Plane.rotatePointAxis(this.yAxis, this.zAxis, value, Point3D.ZERO);
 			//this.zAxis = Plane.rotatePointAxis(this.zAxis, this.zAxis, value, Point3D.ZERO);
 		}
 
@@ -52,16 +52,15 @@ public class Plane{
 	}
 
 	private Point3D position, chunkPosition;
-	private double rx, ry, rz;
 	private Mesh mesh;
-	private Point3D pivot;
+	private double rx, ry, rz;
 	private Consumer<Point3D> onChunkChanged;
 	private AxisSystem axisSystem;
+	private static final int TRIANGLE_INDEX = 22;
 
 	public Plane(Point3D pos){
 		this.position = pos;
 		this.chunkPosition = new Point3D((int)(pos.getX()/World.PLANE_SIZE), (int)(pos.getY()/World.PLANE_SIZE), (int)(pos.getZ()/World.PLANE_SIZE));
-		this.pivot = new Point3D(0, -0.5, -1);
 		this.axisSystem = new AxisSystem();
 	}
 
@@ -86,7 +85,10 @@ public class Plane{
 		object.translate(this.position.getX()+0.33, this.position.getY(), this.position.getZ());
 
 		object.build();
+
 		this.mesh = object;
+		calculatePosition();
+
 		return object;
 	}
 
@@ -102,23 +104,43 @@ public class Plane{
 		return this.rz;
 	}
 
+	private void calculatePosition(){
+		MeshTriangle[] triangles = this.mesh.getTriangles();
+		double minX = Double.POSITIVE_INFINITY;
+		double minY = Double.POSITIVE_INFINITY;
+		double minZ = Double.POSITIVE_INFINITY;
+		double maxX = Double.NEGATIVE_INFINITY;
+		double maxY = Double.NEGATIVE_INFINITY;
+		double maxZ = Double.NEGATIVE_INFINITY;
+		for (int i = 0; i < triangles.length; i++){
+			MeshVertex[] vertices = new MeshVertex[]{triangles[i].getVertex1(), triangles[i].getVertex2(), triangles[i].getVertex3()};
+			for (int j = 0; j < 3; j++){
+				if (i == 0 || vertices[j].getPosition().getX() < minX) minX = vertices[j].getPosition().getX();
+				if (i == 0 || vertices[j].getPosition().getY() < minY) minY = vertices[j].getPosition().getY();
+				if (i == 0 || vertices[j].getPosition().getZ() < minZ) minZ = vertices[j].getPosition().getZ();
+				if (i == 0 || vertices[j].getPosition().getX() > maxX) maxX = vertices[j].getPosition().getX();
+				if (i == 0 || vertices[j].getPosition().getY() > maxY) maxY = vertices[j].getPosition().getY();
+				if (i == 0 || vertices[j].getPosition().getZ() > maxZ) maxZ = vertices[j].getPosition().getZ();
+			}
+		}
+		//System.out.format("Min %.2f %.2f %.2f  Max %.2f %.2f %.2f\n", minX, minY, minZ, maxX, maxY, maxZ);
+		this.position = new Point3D((maxX-minX)/2+minX, (maxY-minY)/2+minY, (maxZ-minZ)/2+minZ);
+	}
+
 	public void turnPlane(){ // private
 		double v = -(getRz()%(2*Math.PI))*0.01;
 		rotateY(v);
 	}
 
-	/*private Point3D getMeshPosition(){
-		return this.mesh.getTriangles()[0].getVertex1().getPosition();
-	}*/
-
 	public void move(Camera camera, Point3D vector){
 		turnPlane();
-		camera.setPosition(this.position.add(this.axisSystem.getZaxis().multiply(-2.5)));
+		camera.setPosition(this.position.add(this.axisSystem.getZaxis().multiply(-2.5).add(0, -0.15, 0)));
 		camera.setRx(getRx());
 		camera.setRy(getRy());
+		//camera.setPosition(camera.getPosition().add(vector));
 		this.mesh.translate(vector.getX(), vector.getY(), vector.getZ());
 		this.mesh.build();
-		this.position = this.position.add(vector);
+		calculatePosition();
 		Point3D chunkPos = new Point3D((int)(this.position.getX()/World.PLANE_SIZE), (int)(this.position.getY()/World.PLANE_SIZE), (int)(this.position.getZ()/World.PLANE_SIZE));
 		if (!this.chunkPosition.equals(chunkPos)){
 			this.chunkPosition = chunkPos;
@@ -127,26 +149,29 @@ public class Plane{
 	}
 
 	public void rotateX(double value){
-		this.mesh.setRotation(this.axisSystem.getXaxis(), value, this.position.add(this.pivot));
+		this.mesh.setRotation(this.axisSystem.getXaxis(), value, this.position);
 		this.mesh.build();
+		calculatePosition();
 		this.rx += value;
-		this.position = rotatePointAxis(this.position, this.axisSystem.getXaxis(), value, this.position.add(this.pivot));
+		//this.position = rotatePointAxis(this.position, this.axisSystem.getXaxis(), value, this.position.add(this.pivot));
 		this.axisSystem.rotateX(value);
 	}
 
 	public void rotateY(double value){
-		this.mesh.setRotation(this.axisSystem.getYaxis(), value, this.position.add(this.pivot));
+		this.mesh.setRotation(this.axisSystem.getYaxis(), value, this.position);
 		this.mesh.build();
+		calculatePosition();
 		this.ry += value;
-		this.position = rotatePointAxis(this.position, this.axisSystem.getYaxis(), value, this.position.add(this.pivot));
+		//this.position = rotatePointAxis(this.position, this.axisSystem.getYaxis(), value, this.position.add(this.pivot));
 		this.axisSystem.rotateY(value);
 	}
 
 	public void rotateZ(double value){
-		this.mesh.setRotation(this.axisSystem.getZaxis(), value, this.position.add(this.pivot));
+		this.mesh.setRotation(this.axisSystem.getZaxis(), value, this.position);
 		this.mesh.build();
+		calculatePosition();
 		this.rz += value;
-		this.position = rotatePointAxis(this.position, this.axisSystem.getZaxis(), value, this.position.add(this.pivot));
+		//this.position = rotatePointAxis(this.position, this.axisSystem.getZaxis(), value, this.position.add(this.pivot));
 		this.axisSystem.rotateZ(value);
 	}
 
@@ -163,11 +188,17 @@ public class Plane{
 
 	@Override
 	public String toString(){
+		Function<Point3D, String> pretty = p -> String.format("%.3f %.3f %.3f", p.getX(), p.getY(), p.getZ());
+
 		String rot = String.format("RX: %.2f RY: %.2f RZ: %.2f", getRx(), getRy(), getRz());
-		String pos = String.format("X: %.2f Y: %.2f Z: %.2f", this.position.getX(), this.position.getY(), this.position.getZ());
-		String xAxis = String.format("xAxis: %.3f %.3f %.3f", this.axisSystem.getXaxis().getX(), this.axisSystem.getXaxis().getY(), this.axisSystem.getXaxis().getZ());
-		String yAxis = String.format("yAxis: %.3f %.3f %.3f", this.axisSystem.getYaxis().getX(), this.axisSystem.getYaxis().getY(), this.axisSystem.getYaxis().getZ());
-		String zAxis = String.format("zAxis: %.3f %.3f %.3f", this.axisSystem.getZaxis().getX(), this.axisSystem.getZaxis().getY(), this.axisSystem.getZaxis().getZ());
-		return rot+"\n"+pos+"\n"+xAxis+"\n"+yAxis+"\n"+zAxis;
+		String pos = String.format("Pos: %s", pretty.apply(this.position));
+		String xAxis = String.format("xAxis: %s", pretty.apply(this.axisSystem.getXaxis()));
+		String yAxis = String.format("yAxis: %s", pretty.apply(this.axisSystem.getYaxis()));
+		String zAxis = String.format("zAxis: %s", pretty.apply(this.axisSystem.getZaxis()));
+		String v1 = String.format("v1: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX].getVertex1().getPosition()));
+		String v2 = String.format("v2: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX].getVertex2().getPosition()));
+		String v3 = String.format("v3: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX].getVertex3().getPosition()));
+
+		return rot+"\n"+pos+"\n"+xAxis+"\n"+yAxis+"\n"+zAxis+"\n"+v1+"\n"+v2+"\n"+v3;
 	}
 }

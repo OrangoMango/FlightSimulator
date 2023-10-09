@@ -13,9 +13,12 @@ import com.orangomango.rendering3d.model.Mesh;
 public class World{
 	private Point3D position;
 	private HashMap<Point3D, Mesh> chunks = new HashMap<>();
+	private int seed = (int)System.currentTimeMillis();
 
-	public static final double PLANE_SIZE = 6;
-	public static final int CHUNKS = 7;
+	public static final double PLANE_SIZE = 0.5;
+	public static final int CHUNKS = 33;
+	public static final float FREQUENCY = 0.35f;
+	public static final double HEIGHT = 1.2;
 
 	public World(Point3D pos){
 		this.position = pos;
@@ -44,13 +47,24 @@ public class World{
 	}
 
 	private Mesh build(Point3D chunkPos){
-		Point3D a = this.position.add(new Point3D(PLANE_SIZE*chunkPos.getX(), 0.3, PLANE_SIZE*chunkPos.getZ()));
-		Point3D b = this.position.add(a.add(0, 0, -PLANE_SIZE));
-		Point3D c = this.position.add(a.add(6, 0, -PLANE_SIZE));
-		Point3D d = this.position.add(a.add(PLANE_SIZE, 0, 0));
+		PerlinNoise noise = new PerlinNoise(this.seed);
+		final float cx = (float)chunkPos.getX();
+		final float cy = (float)chunkPos.getY();
+		final float cz = (float)chunkPos.getZ();
+
+		final double aHeight = 0.3+(noise.noise(Math.abs(cx*FREQUENCY), 0, Math.abs(cz*FREQUENCY))+1)/2*HEIGHT;
+		final double bHeight = 0.3+(noise.noise(Math.abs(cx*FREQUENCY), 0, Math.abs((cz-1)*FREQUENCY))+1)/2*HEIGHT;
+		final double cHeight = 0.3+(noise.noise(Math.abs((cx+1)*FREQUENCY), 0, Math.abs((cz-1)*FREQUENCY))+1)/2*HEIGHT;
+		final double dHeight = 0.3+(noise.noise(Math.abs((cx+1)*FREQUENCY), 0, Math.abs(cz*FREQUENCY))+1)/2*HEIGHT;
+
+		Point3D a = this.position.add(new Point3D(PLANE_SIZE*cx, aHeight, PLANE_SIZE*cz));
+		Point3D b = this.position.add(new Point3D(PLANE_SIZE*cx, bHeight, PLANE_SIZE*(cz-1)));
+		Point3D c = this.position.add(new Point3D(PLANE_SIZE*(cx+1), cHeight, PLANE_SIZE*(cz-1)));
+		Point3D d = this.position.add(new Point3D(PLANE_SIZE*(cx+1), dHeight, PLANE_SIZE*cz));
 
 		Color color = Color.color(Math.random(), Math.random(), Math.random());
 		Mesh object = new Mesh(new Point3D[]{a, b, c, d}, new int[][]{{0, 1, 2}, {0, 2, 3}}, null, null, new Color[]{color, color});
+		object.setShowAllFaces(true);
 
 		object.build();
 		return object;

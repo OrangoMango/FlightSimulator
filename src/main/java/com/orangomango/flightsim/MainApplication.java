@@ -47,7 +47,7 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(new Point3D(0, speed, 0)), false);
 		// --------------------------------------------------------
 
-		final double angle = 0.05;
+		final double angle = 0.02;
 		engine.setOnKey(KeyCode.UP, () -> {
 			plane.rotateX(-angle);
 		}, true);
@@ -59,7 +59,7 @@ public class MainApplication extends Application{
 
 		// Move the plane
 		engine.setOnKey(KeyCode.Z, () -> {
-			final double planeSpeed = 0.1;
+			final double planeSpeed = 0.2;
 			Point3D vector = plane.getAxisSystem().getZaxis().multiply(planeSpeed);
 			plane.move(camera, vector);
 		}, false);
@@ -78,6 +78,7 @@ public class MainApplication extends Application{
 		}, true);
 
 		engine.setOnKey(KeyCode.X, () -> plane.rotateY(angle), true);
+		engine.setOnKey(KeyCode.C, plane::turnPlane, true);
 
 		final Font mainFont = new Font("sans-serif", 15);
 		engine.setOnUpdate(gc -> {
@@ -85,6 +86,9 @@ public class MainApplication extends Application{
 			gc.setTextAlign(TextAlignment.RIGHT);
 			gc.setFont(mainFont);
 			gc.fillText(plane.toString(), WIDTH-20, 30);
+
+			gc.setStroke(Color.BLUE);
+			gc.strokeLine(WIDTH/2, 0, WIDTH/2, HEIGHT);
 		});
 		
 		stage.setTitle("FlightSim");
