@@ -53,10 +53,12 @@ public class Plane{
 
 	private Point3D position, chunkPosition;
 	private Mesh mesh;
-	private double rx, ry, rz;
 	private Consumer<Point3D> onChunkChanged;
 	private AxisSystem axisSystem;
-	private static final int TRIANGLE_INDEX = 22;
+
+	private static final int TRIANGLE_INDEX_X = 8;
+	private static final int TRIANGLE_INDEX_Y = 4; 
+	private static final int TRIANGLE_INDEX_Z = 22;
 
 	public Plane(Point3D pos){
 		this.position = pos;
@@ -93,15 +95,33 @@ public class Plane{
 	}
 
 	public double getRx(){
-		return this.rx;
+		Point3D a = this.mesh.getTriangles()[TRIANGLE_INDEX_X].getVertex1().getPosition();
+		Point3D b = this.mesh.getTriangles()[TRIANGLE_INDEX_X].getVertex2().getPosition();
+		Point3D vec = b.subtract(a);
+		vec = vec.subtract(vec.getX(), 0, 0);
+		double angle = Math.acos(vec.normalize().dotProduct(new Point3D(0, 0, vec.getZ()/Math.abs(vec.getZ()))));
+		if (vec.getY() < 0) angle *= -1;
+		return angle;
 	}
 
 	public double getRy(){
-		return this.ry;
+		Point3D a = this.mesh.getTriangles()[TRIANGLE_INDEX_Y].getVertex1().getPosition();
+		Point3D b = this.mesh.getTriangles()[TRIANGLE_INDEX_Y].getVertex2().getPosition();
+		Point3D vec = b.subtract(a);
+		vec = vec.subtract(0, vec.getY(), 0);
+		double angle = Math.acos(vec.normalize().dotProduct(new Point3D(1, 0, 0)));
+		if (vec.getZ() < 0) angle *= -1;
+		return angle;
 	}
 
 	public double getRz(){
-		return this.rz;
+		Point3D a = this.mesh.getTriangles()[TRIANGLE_INDEX_Z].getVertex1().getPosition();
+		Point3D b = this.mesh.getTriangles()[TRIANGLE_INDEX_Z].getVertex2().getPosition();
+		Point3D vec = b.subtract(a);
+		vec = vec.subtract(0, 0, vec.getZ());
+		double angle = Math.acos(vec.normalize().dotProduct(new Point3D(1, 0, 0)));
+		if (vec.getY() < 0) angle *= -1;
+		return angle;
 	}
 
 	private void calculatePosition(){
@@ -152,7 +172,6 @@ public class Plane{
 		this.mesh.setRotation(this.axisSystem.getXaxis(), value, this.position);
 		this.mesh.build();
 		calculatePosition();
-		this.rx += value;
 		//this.position = rotatePointAxis(this.position, this.axisSystem.getXaxis(), value, this.position.add(this.pivot));
 		this.axisSystem.rotateX(value);
 	}
@@ -161,7 +180,6 @@ public class Plane{
 		this.mesh.setRotation(this.axisSystem.getYaxis(), value, this.position);
 		this.mesh.build();
 		calculatePosition();
-		this.ry += value;
 		//this.position = rotatePointAxis(this.position, this.axisSystem.getYaxis(), value, this.position.add(this.pivot));
 		this.axisSystem.rotateY(value);
 	}
@@ -170,7 +188,6 @@ public class Plane{
 		this.mesh.setRotation(this.axisSystem.getZaxis(), value, this.position);
 		this.mesh.build();
 		calculatePosition();
-		this.rz += value;
 		//this.position = rotatePointAxis(this.position, this.axisSystem.getZaxis(), value, this.position.add(this.pivot));
 		this.axisSystem.rotateZ(value);
 	}
@@ -195,9 +212,9 @@ public class Plane{
 		String xAxis = String.format("xAxis: %s", pretty.apply(this.axisSystem.getXaxis()));
 		String yAxis = String.format("yAxis: %s", pretty.apply(this.axisSystem.getYaxis()));
 		String zAxis = String.format("zAxis: %s", pretty.apply(this.axisSystem.getZaxis()));
-		String v1 = String.format("v1: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX].getVertex1().getPosition()));
-		String v2 = String.format("v2: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX].getVertex2().getPosition()));
-		String v3 = String.format("v3: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX].getVertex3().getPosition()));
+		String v1 = String.format("v1: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX_Y].getVertex1().getPosition()));
+		String v2 = String.format("v2: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX_Y].getVertex2().getPosition()));
+		String v3 = String.format("v3: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX_Y].getVertex3().getPosition()));
 
 		return rot+"\n"+pos+"\n"+xAxis+"\n"+yAxis+"\n"+zAxis+"\n"+v1+"\n"+v2+"\n"+v3;
 	}

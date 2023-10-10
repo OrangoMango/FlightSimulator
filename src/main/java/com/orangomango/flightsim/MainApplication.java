@@ -38,7 +38,7 @@ public class MainApplication extends Application{
 
 		// -------------------- DEBUG movement --------------------
 		Engine3D.SHOW_LINES = true;
-		final double speed = 0.1;
+		final double speed = 0.2;
 		engine.setOnKey(KeyCode.W, () -> camera.move(new Point3D(speed*Math.cos(camera.getRy()+Math.PI/2), 0, speed*Math.sin(camera.getRy()+Math.PI/2))), false);
 		engine.setOnKey(KeyCode.A, () -> camera.move(new Point3D(-speed*Math.cos(camera.getRy()), 0, -speed*Math.sin(camera.getRy()))), false);
 		engine.setOnKey(KeyCode.S, () -> camera.move(new Point3D(-speed*Math.cos(camera.getRy()+Math.PI/2), 0, -speed*Math.sin(camera.getRy()+Math.PI/2))), false);
@@ -47,7 +47,7 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(new Point3D(0, speed, 0)), false);
 		// --------------------------------------------------------
 
-		final double angle = 0.02;
+		final double angle = 0.01;
 		engine.setOnKey(KeyCode.UP, () -> {
 			plane.rotateX(-angle);
 		}, true);
@@ -87,8 +87,15 @@ public class MainApplication extends Application{
 			gc.setFont(mainFont);
 			gc.fillText(plane.toString(), WIDTH-20, 30);
 
-			gc.setStroke(Color.BLUE);
-			gc.strokeLine(WIDTH/2, 0, WIDTH/2, HEIGHT);
+			//gc.setStroke(Color.BLUE);
+			//gc.strokeLine(WIDTH/2, 0, WIDTH/2, HEIGHT);
+
+			if (Math.abs(plane.getRz()) < angle){
+				plane.rotateZ(-plane.getRz()); // adjust rz
+			}
+			if (Math.abs(plane.getRx()) < angle){
+				plane.rotateX(-plane.getRx()); // adjust rx
+			}
 		});
 		
 		stage.setTitle("FlightSim");
