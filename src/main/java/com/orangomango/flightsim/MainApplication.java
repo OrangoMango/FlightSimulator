@@ -54,13 +54,13 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.DOWN, () -> {
 			plane.rotateX(angle);
 		}, true);
-		engine.setOnKey(KeyCode.RIGHT, () -> plane.rotateZ(angle), true);
-		engine.setOnKey(KeyCode.LEFT, () -> plane.rotateZ(-angle), true);
+		engine.setOnKey(KeyCode.RIGHT, () -> plane.rotateY(-angle), true);
+		engine.setOnKey(KeyCode.LEFT, () -> plane.rotateY(angle), true);
 
 		// Move the plane
 		engine.setOnKey(KeyCode.Z, () -> {
 			final double planeSpeed = 0.2;
-			Point3D vector = plane.getAxisSystem().getZaxis().multiply(planeSpeed);
+			Point3D vector = plane.getDirection().multiply(planeSpeed);
 			plane.move(camera, vector);
 		}, false);
 
@@ -77,9 +77,6 @@ public class MainApplication extends Application{
 			camera.setRy(0);
 		}, true);
 
-		engine.setOnKey(KeyCode.X, () -> plane.rotateY(angle), true);
-		engine.setOnKey(KeyCode.C, plane::turnPlane, true);
-
 		final Font mainFont = new Font("sans-serif", 15);
 		engine.setOnUpdate(gc -> {
 			gc.setFill(Color.BLACK);
@@ -87,15 +84,8 @@ public class MainApplication extends Application{
 			gc.setFont(mainFont);
 			gc.fillText(plane.toString(), WIDTH-20, 30);
 
-			//gc.setStroke(Color.BLUE);
-			//gc.strokeLine(WIDTH/2, 0, WIDTH/2, HEIGHT);
-
-			if (Math.abs(plane.getRz()) < angle){
-				plane.rotateZ(-plane.getRz()); // adjust rz
-			}
-			if (Math.abs(plane.getRx()) < angle){
-				plane.rotateX(-plane.getRx()); // adjust rx
-			}
+			gc.setStroke(Color.BLUE);
+			gc.strokeLine(WIDTH/2, 0, WIDTH/2, HEIGHT);
 		});
 		
 		stage.setTitle("FlightSim");
