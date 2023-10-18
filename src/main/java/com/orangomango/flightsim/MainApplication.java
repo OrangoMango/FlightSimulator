@@ -47,15 +47,17 @@ public class MainApplication extends Application{
 		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(new Point3D(0, speed, 0)), false);
 		// --------------------------------------------------------
 
-		final double angle = 0.01;
+		final double angle = 0.02;
 		engine.setOnKey(KeyCode.UP, () -> {
 			plane.rotateX(-angle);
 		}, true);
 		engine.setOnKey(KeyCode.DOWN, () -> {
 			plane.rotateX(angle);
 		}, true);
-		engine.setOnKey(KeyCode.RIGHT, () -> plane.rotateY(-angle), true);
-		engine.setOnKey(KeyCode.LEFT, () -> plane.rotateY(angle), true);
+		engine.setOnKey(KeyCode.RIGHT, () -> plane.rotateZ(angle), true);
+		engine.setOnKey(KeyCode.LEFT, () -> plane.rotateZ(-angle), true);
+		engine.setOnKey(KeyCode.X, () -> plane.rotateY(angle), true);
+		engine.setOnKey(KeyCode.C, () -> plane.rotateY(-angle), true);
 
 		// Move the plane
 		engine.setOnKey(KeyCode.Z, () -> {

@@ -47,7 +47,32 @@ public class Plane{
 		object.build();
 		this.mesh = object;
 
+		this.position = calculateCenter();
+
 		return object;
+	}
+
+	private Point3D calculateCenter(){
+		MeshTriangle[] triangles = this.mesh.getTriangles();
+		double minX = Double.POSITIVE_INFINITY;
+		double minY = Double.POSITIVE_INFINITY;
+		double minZ = Double.POSITIVE_INFINITY;
+		double maxX = Double.NEGATIVE_INFINITY;
+		double maxY = Double.NEGATIVE_INFINITY;
+		double maxZ = Double.NEGATIVE_INFINITY;
+		for (int i = 0; i < triangles.length; i++){
+			MeshVertex[] vertices = new MeshVertex[]{triangles[i].getVertex1(), triangles[i].getVertex2(), triangles[i].getVertex3()};
+			for (int j = 0; j < 3; j++){
+				if (i == 0 || vertices[j].getPosition().getX() < minX) minX = vertices[j].getPosition().getX();
+				if (i == 0 || vertices[j].getPosition().getY() < minY) minY = vertices[j].getPosition().getY();
+				if (i == 0 || vertices[j].getPosition().getZ() < minZ) minZ = vertices[j].getPosition().getZ();
+				if (i == 0 || vertices[j].getPosition().getX() > maxX) maxX = vertices[j].getPosition().getX();
+				if (i == 0 || vertices[j].getPosition().getY() > maxY) maxY = vertices[j].getPosition().getY();
+				if (i == 0 || vertices[j].getPosition().getZ() > maxZ) maxZ = vertices[j].getPosition().getZ();
+			}
+		}
+		//System.out.format("Min %.2f %.2f %.2f  Max %.2f %.2f %.2f\n", minX, minY, minZ, maxX, maxY, maxZ);
+		return new Point3D((maxX-minX)/2+minX, (maxY-minY)/2+minY, (maxZ-minZ)/2+minZ);
 	}
 
 	public double getRx(){
@@ -63,6 +88,7 @@ public class Plane{
 	}
 
 	public void move(Camera camera, Point3D vector){
+		rotateY(-this.rz*0.05);
 		this.position = this.position.add(vector);
 		camera.setPosition(this.position.add(getDirection().multiply(-4.5)).add(0, -1, 0));
 		camera.setRx(getRx());
@@ -80,25 +106,18 @@ public class Plane{
 		this.mesh.setRotation(getDirection().crossProduct(new Point3D(0, -1, 0)), value, this.position);
 		this.mesh.build();
 		this.rx += value;
-		//this.position = rotatePointAxis(this.position, this.axisSystem.getXaxis(), value, this.position.add(this.pivot));
-		//this.axisSystem.rotateX(value);
 	}
 
 	public void rotateY(double value){
 		this.mesh.setRotation(new Point3D(0, -1, 0), value, this.position);
 		this.mesh.build();
 		this.ry += value;
-		//rotateZ(-value);
-		//this.position = rotatePointAxis(this.position, this.axisSystem.getYaxis(), value, this.position.add(this.pivot));
-		//this.axisSystem.rotateY(value);
 	}
 
 	public void rotateZ(double value){
 		this.mesh.setRotation(getDirection(), value, this.position);
 		this.mesh.build();
 		this.rz += value;
-		//this.position = rotatePointAxis(this.position, this.axisSystem.getZaxis(), value, this.position.add(this.pivot));
-		//this.axisSystem.rotateZ(value);
 	}
 
 	public Point3D getDirection(){
@@ -122,13 +141,11 @@ public class Plane{
 
 		String rot = String.format("RX: %.2f RY: %.2f RZ: %.2f", getRx() % (2*Math.PI), getRy() % (2*Math.PI), getRz() % (2*Math.PI));
 		String pos = String.format("Pos: %s", pretty.apply(this.position));
-		//String xAxis = String.format("xAxis: %s", pretty.apply(this.axisSystem.getXaxis()));
-		//String yAxis = String.format("yAxis: %s", pretty.apply(this.axisSystem.getYaxis()));
-		//String zAxis = String.format("zAxis: %s", pretty.apply(this.axisSystem.getZaxis()));
+		String direction = String.format("Dir: %s", pretty.apply(getDirection()));
 		//String v1 = String.format("v1: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX_Y].getVertex1().getPosition()));
 		//String v2 = String.format("v2: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX_Y].getVertex2().getPosition()));
 		//String v3 = String.format("v3: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX_Y].getVertex3().getPosition()));
 
-		return rot+"\n"+pos; //+"\n"+xAxis+"\n"+yAxis+"\n"+zAxis+"\n"+v1+"\n"+v2+"\n"+v3;
+		return rot+"\n"+pos+"\n"+direction; //+"\n"+v1+"\n"+v2+"\n"+v3;
 	}
 }
