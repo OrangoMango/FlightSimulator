@@ -11,7 +11,7 @@ import com.orangomango.rendering3d.model.*;
 import com.orangomango.rendering3d.Engine3D;
 
 public class Plane{
-	private Point3D position, chunkPosition;
+	private Point3D position, chunkPosition, pov;
 	private Mesh mesh;
 	private Consumer<Point3D> onChunkChanged;
 	private double rx, ry, rz;
@@ -31,7 +31,7 @@ public class Plane{
 
 	public Mesh build(){
 		if (this.mesh != null){
-			throw new IllegalStateException("Mesh has been already built");
+			throw new IllegalStateException("Mesh has already been built");
 		}
 
 		MeshLoader loader = null;
@@ -71,7 +71,6 @@ public class Plane{
 				if (i == 0 || vertices[j].getPosition().getZ() > maxZ) maxZ = vertices[j].getPosition().getZ();
 			}
 		}
-		//System.out.format("Min %.2f %.2f %.2f  Max %.2f %.2f %.2f\n", minX, minY, minZ, maxX, maxY, maxZ);
 		return new Point3D((maxX-minX)/2+minX, (maxY-minY)/2+minY, (maxZ-minZ)/2+minZ);
 	}
 
@@ -87,12 +86,20 @@ public class Plane{
 		return this.rz;
 	}
 
+	public void setPOV(Camera camera){
+		this.pov = camera.getPosition().subtract(this.position);
+	}
+
 	public void move(Camera camera, Point3D vector){
-		rotateY(-this.rz*0.05);
+		rotateY(-this.rz*0.025);
+
+		// Point the camera to the plane
+		Point3D	pos = this.position.subtract(camera.getPosition());
+		camera.setRx(-Math.atan2(pos.getY(), Math.sqrt(Math.pow(pos.getX(), 2)+Math.pow(pos.getZ(), 2))));
+		camera.setRy(Math.atan2(-pos.getX(), pos.getZ()));
+
 		this.position = this.position.add(vector);
-		camera.setPosition(this.position.add(getDirection().multiply(-4.5)).add(0, -1, 0));
-		camera.setRx(getRx());
-		camera.setRy(getRy());
+		camera.setPosition(this.position.add(pov));
 		this.mesh.translate(vector.getX(), vector.getY(), vector.getZ());
 		this.mesh.build();
 		Point3D chunkPos = new Point3D((int)(this.position.getX()/World.PLANE_SIZE), (int)(this.position.getY()/World.PLANE_SIZE), (int)(this.position.getZ()/World.PLANE_SIZE));
@@ -103,15 +110,18 @@ public class Plane{
 	}
 
 	public void rotateX(double value){
-		this.mesh.setRotation(getDirection().crossProduct(new Point3D(0, -1, 0)), value, this.position);
+		Point3D axis = getDirection().crossProduct(new Point3D(0, -1, 0));
+		this.mesh.setRotation(axis, value, this.position);
 		this.mesh.build();
 		this.rx += value;
+		this.pov = rotatePointAxis(this.pov, axis, value, Point3D.ZERO);
 	}
 
 	public void rotateY(double value){
 		this.mesh.setRotation(new Point3D(0, -1, 0), value, this.position);
 		this.mesh.build();
 		this.ry += value;
+		this.pov = rotatePointAxis(this.pov, new Point3D(0, -1, 0), value, Point3D.ZERO);
 	}
 
 	public void rotateZ(double value){
@@ -128,12 +138,16 @@ public class Plane{
 		return new Point3D(stepX, stepY, stepZ);
 	}
 
-	/*private static Point3D rotatePointAxis(Point3D point, Point3D axis, double r, Point3D pivot){
+	private static Point3D rotatePointAxis(Point3D point, Point3D axis, double r, Point3D pivot){
 		point = point.subtract(pivot);
 		double[] rot = Engine3D.multiply(Engine3D.getRotateAxis(axis, r), new double[]{point.getX(), point.getY(), point.getZ()});
 		Point3D output = new Point3D(rot[0], rot[1], rot[2]);
 		return output.add(pivot);
-	}*/
+	}
+
+	public Point3D getPosition(){
+		return this.position;
+	}
 
 	@Override
 	public String toString(){
@@ -142,10 +156,7 @@ public class Plane{
 		String rot = String.format("RX: %.2f RY: %.2f RZ: %.2f", getRx() % (2*Math.PI), getRy() % (2*Math.PI), getRz() % (2*Math.PI));
 		String pos = String.format("Pos: %s", pretty.apply(this.position));
 		String direction = String.format("Dir: %s", pretty.apply(getDirection()));
-		//String v1 = String.format("v1: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX_Y].getVertex1().getPosition()));
-		//String v2 = String.format("v2: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX_Y].getVertex2().getPosition()));
-		//String v3 = String.format("v3: %s", pretty.apply(this.mesh.getTriangles()[TRIANGLE_INDEX_Y].getVertex3().getPosition()));
 
-		return rot+"\n"+pos+"\n"+direction; //+"\n"+v1+"\n"+v2+"\n"+v3;
+		return rot+"\n"+pos+"\n"+direction;
 	}
 }

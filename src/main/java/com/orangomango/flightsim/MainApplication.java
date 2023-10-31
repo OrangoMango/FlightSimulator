@@ -17,10 +17,12 @@ import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Light;
 
 public class MainApplication extends Application{
-	private static final int WIDTH = 720; //360;
-	private static final int HEIGHT = 360; //180;
+	private static final int WIDTH = 720;
+	private static final int HEIGHT = 360;
 
 	private static final Point3D STARTPOS = new Point3D(0, -0.9, -3.2);
+
+	private boolean flagMoving;
 	
 	@Override
 	public void start(Stage stage){
@@ -29,6 +31,7 @@ public class MainApplication extends Application{
 		engine.setCamera(camera);
 
 		Plane plane = new Plane(Point3D.ZERO);
+		plane.setPOV(camera);
 		World world = new World(Point3D.ZERO);
 
 		plane.setOnChunkChanged(pos -> {
@@ -39,12 +42,30 @@ public class MainApplication extends Application{
 		// -------------------- DEBUG movement --------------------
 		Engine3D.SHOW_LINES = true;
 		final double speed = 0.2;
-		engine.setOnKey(KeyCode.W, () -> camera.move(new Point3D(speed*Math.cos(camera.getRy()+Math.PI/2), 0, speed*Math.sin(camera.getRy()+Math.PI/2))), false);
-		engine.setOnKey(KeyCode.A, () -> camera.move(new Point3D(-speed*Math.cos(camera.getRy()), 0, -speed*Math.sin(camera.getRy()))), false);
-		engine.setOnKey(KeyCode.S, () -> camera.move(new Point3D(-speed*Math.cos(camera.getRy()+Math.PI/2), 0, -speed*Math.sin(camera.getRy()+Math.PI/2))), false);
-		engine.setOnKey(KeyCode.D, () -> camera.move(new Point3D(speed*Math.cos(camera.getRy()), 0, speed*Math.sin(camera.getRy()))), false);
-		engine.setOnKey(KeyCode.SPACE, () -> camera.move(new Point3D(0, -speed, 0)), false);
-		engine.setOnKey(KeyCode.SHIFT, () -> camera.move(new Point3D(0, speed, 0)), false);
+		engine.setOnKey(KeyCode.W, () -> {
+			camera.move(new Point3D(speed*Math.cos(camera.getRy()+Math.PI/2), 0, speed*Math.sin(camera.getRy()+Math.PI/2)));
+			plane.setPOV(camera);
+		}, false);
+		engine.setOnKey(KeyCode.A, () -> {
+			camera.move(new Point3D(-speed*Math.cos(camera.getRy()), 0, -speed*Math.sin(camera.getRy())));
+			plane.setPOV(camera);
+		}, false);
+		engine.setOnKey(KeyCode.S, () -> {
+			camera.move(new Point3D(-speed*Math.cos(camera.getRy()+Math.PI/2), 0, -speed*Math.sin(camera.getRy()+Math.PI/2)));
+			plane.setPOV(camera);
+		}, false);
+		engine.setOnKey(KeyCode.D, () -> {
+			camera.move(new Point3D(speed*Math.cos(camera.getRy()), 0, speed*Math.sin(camera.getRy())));
+			plane.setPOV(camera);
+		}, false);
+		engine.setOnKey(KeyCode.SPACE, () -> {
+			camera.move(new Point3D(0, -speed, 0));
+			plane.setPOV(camera);
+		}, false);
+		engine.setOnKey(KeyCode.SHIFT, () -> {
+			camera.move(new Point3D(0, speed, 0));
+			plane.setPOV(camera);
+		}, false);
 		// --------------------------------------------------------
 
 		final double angle = 0.02;
@@ -61,22 +82,19 @@ public class MainApplication extends Application{
 
 		// Move the plane
 		engine.setOnKey(KeyCode.Z, () -> {
-			final double planeSpeed = 0.2;
-			Point3D vector = plane.getDirection().multiply(planeSpeed);
-			plane.move(camera, vector);
+			this.flagMoving = !this.flagMoving;
 		}, false);
 
 		engine.addObject(plane.build());
 		world.manage(engine, Point3D.ZERO);
 
-		Light light = new Light(new Camera(new Point3D(2, -1, -3), WIDTH, HEIGHT, Math.PI/4, 100, 0.3));
-		light.getCamera().lookAtCenter();
+		Light light = new Light(new Camera(new Point3D(0, -4, 0), WIDTH, HEIGHT, Math.PI/4, 100, 0.3));
 		engine.getLights().add(light);
 
 		engine.setOnKey(KeyCode.R, () -> {
-			camera.setPosition(STARTPOS);
-			camera.setRx(0);
-			camera.setRy(0);
+			camera.setPosition(plane.getPosition().add(plane.getDirection().multiply(-3.5)).add(0, -0.5, 0));
+			camera.setRx(plane.getRx());
+			camera.setRy(plane.getRy());
 		}, true);
 
 		final Font mainFont = new Font("sans-serif", 15);
@@ -86,11 +104,18 @@ public class MainApplication extends Application{
 			gc.setFont(mainFont);
 			gc.fillText(plane.toString(), WIDTH-20, 30);
 
-			gc.setStroke(Color.BLUE);
-			gc.strokeLine(WIDTH/2, 0, WIDTH/2, HEIGHT);
+			//gc.setStroke(Color.BLUE);
+			//gc.strokeLine(WIDTH/2, 0, WIDTH/2, HEIGHT);
+
+			if (this.flagMoving){
+				final double planeSpeed = 0.3;
+				Point3D vector = plane.getDirection().multiply(planeSpeed);
+				plane.move(camera, vector);
+			}
+
+			stage.setTitle("FlightSim - FPS: "+engine.getFPS());
 		});
-		
-		stage.setTitle("FlightSim");
+
 		stage.setResizable(false);
 		stage.setScene(engine.getScene());
 		stage.show();

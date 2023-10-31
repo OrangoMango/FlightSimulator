@@ -17,7 +17,7 @@ public class World{
 
 	public static final double PLANE_SIZE = 0.5;
 	public static final int CHUNKS = 33;
-	public static final float FREQUENCY = 0.35f;
+	public static final float FREQUENCY = 0.3f;
 	public static final double HEIGHT = 1.5;
 
 	public World(Point3D pos){
