@@ -62,5 +62,12 @@ public class TiltIndicator{
 		final double osize = this.rect.getHeight()*0.2;
 		gc.fillOval(-osize/2, -this.rect.getHeight()/2-osize/2, osize, osize);
 		gc.restore();
+
+		gc.save();
+		gc.setStroke(Color.BLACK);
+		gc.setLineWidth(2);
+		gc.strokeOval(this.rect.getMinX(), this.rect.getMinY(), this.rect.getWidth(), this.rect.getHeight());
+		gc.strokeLine(this.rect.getMinX(), this.rect.getMinY()+this.rect.getHeight()/2, this.rect.getMaxX(), this.rect.getMinY()+this.rect.getHeight()/2);
+		gc.restore();
 	}
 }

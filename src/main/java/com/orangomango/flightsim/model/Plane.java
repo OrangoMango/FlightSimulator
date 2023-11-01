@@ -99,6 +99,10 @@ public class Plane{
 		camera.setRx(-Math.atan2(pos.getY(), Math.sqrt(Math.pow(pos.getX(), 2)+Math.pow(pos.getZ(), 2))));
 		camera.setRy(Math.atan2(-pos.getX(), pos.getZ()));
 
+		this.rx = this.rx % (2*Math.PI);
+		this.ry = this.ry % (2*Math.PI);
+		this.rz = this.rz % (2*Math.PI);
+
 		this.position = this.position.add(vector);
 		camera.setPosition(this.position.add(pov));
 		this.mesh.translate(vector.getX(), vector.getY(), vector.getZ());

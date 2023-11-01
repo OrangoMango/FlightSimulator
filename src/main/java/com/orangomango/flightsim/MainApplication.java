@@ -23,7 +23,7 @@ public class MainApplication extends Application{
 
 	private static final Point3D STARTPOS = new Point3D(0, -0.9, -3.2);
 
-	private boolean flagMoving;
+	private double planeSpeed = 0;
 	
 	@Override
 	public void start(Stage stage){
@@ -39,7 +39,7 @@ public class MainApplication extends Application{
 			world.manage(engine, pos);
 		});
 
-		TiltIndicator indicator = new TiltIndicator(new Rectangle2D(WIDTH*0.035, HEIGHT-WIDTH*0.035-WIDTH*0.07, WIDTH*0.07, WIDTH*0.07), 0, 0, 0);
+		TiltIndicator indicator = new TiltIndicator(new Rectangle2D(WIDTH*0.035, HEIGHT-WIDTH*0.035-WIDTH*0.1, WIDTH*0.1, WIDTH*0.1), 0, 0, 0);
 
 		// -------------------- DEBUG movement --------------------
 		Engine3D.SHOW_LINES = true;
@@ -72,11 +72,11 @@ public class MainApplication extends Application{
 
 		final double angle = 0.02;
 		engine.setOnKey(KeyCode.UP, () -> {
-			plane.rotateX(-angle);
+			plane.rotateX(-angle*0.5);
 			indicator.setPitch(indicator.getPitch()-angle);
 		}, true);
 		engine.setOnKey(KeyCode.DOWN, () -> {
-			plane.rotateX(angle);
+			plane.rotateX(angle*0.5);
 			indicator.setPitch(indicator.getPitch()+angle);
 		}, true);
 		engine.setOnKey(KeyCode.RIGHT, () -> {
@@ -87,13 +87,10 @@ public class MainApplication extends Application{
 			plane.rotateZ(-angle);
 			indicator.setRoll(indicator.getRoll()-angle);
 		}, true);
-		engine.setOnKey(KeyCode.X, () -> plane.rotateY(angle), true);
-		engine.setOnKey(KeyCode.C, () -> plane.rotateY(-angle), true);
 
 		// Move the plane
-		engine.setOnKey(KeyCode.Z, () -> {
-			this.flagMoving = !this.flagMoving;
-		}, false);
+		engine.setOnKey(KeyCode.Z, () -> this.planeSpeed -= 0.005, true);
+		engine.setOnKey(KeyCode.X, () -> this.planeSpeed += 0.005, true);
 
 		engine.addObject(plane.build());
 		world.manage(engine, Point3D.ZERO);
@@ -112,16 +109,15 @@ public class MainApplication extends Application{
 			gc.setFill(Color.BLACK);
 			gc.setTextAlign(TextAlignment.RIGHT);
 			gc.setFont(mainFont);
-			gc.fillText(plane.toString(), WIDTH-20, 30);
+			gc.fillText(plane.toString()+String.format("\nSpeed: %.3f", this.planeSpeed), WIDTH-20, 30);
 
 			//gc.setStroke(Color.BLUE);
 			//gc.strokeLine(WIDTH/2, 0, WIDTH/2, HEIGHT);
 
 			indicator.render(gc);
 
-			if (this.flagMoving){
-				final double planeSpeed = 0.3;
-				Point3D vector = plane.getDirection().multiply(planeSpeed);
+			if (this.planeSpeed != 0){
+				Point3D vector = plane.getDirection().multiply(this.planeSpeed);
 				plane.move(camera, vector);
 				indicator.setYaw(plane.getRy());
 			}
