@@ -20,9 +20,10 @@ public class Plane{
 	private static final int TRIANGLE_INDEX_Y = 4;
 	private static final int TRIANGLE_INDEX_Z = 22;
 
-	public Plane(Point3D pos){
+	public Plane(Point3D pos, Camera camera){
 		this.position = pos;
 		this.chunkPosition = new Point3D((int)(pos.getX()/World.PLANE_SIZE), (int)(pos.getY()/World.PLANE_SIZE), (int)(pos.getZ()/World.PLANE_SIZE));
+		setPOV(camera);
 	}
 
 	public void setOnChunkChanged(Consumer<Point3D> onChunkChanged){

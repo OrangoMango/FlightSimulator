@@ -5,13 +5,14 @@ import javafx.stage.Stage;
 import javafx.scene.canvas.*;
 import javafx.scene.paint.Color;
 import javafx.geometry.Point3D;
-import javafx.geometry.Point2D;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.input.KeyCode;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
 import com.orangomango.flightsim.model.Plane;
 import com.orangomango.flightsim.model.World;
+import com.orangomango.flightsim.model.TiltIndicator;
 import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Light;
@@ -30,14 +31,15 @@ public class MainApplication extends Application{
 		Camera camera = new Camera(STARTPOS, WIDTH, HEIGHT, Math.PI/4, 100, 0.3);
 		engine.setCamera(camera);
 
-		Plane plane = new Plane(Point3D.ZERO);
-		plane.setPOV(camera);
+		Plane plane = new Plane(Point3D.ZERO, camera);
 		World world = new World(Point3D.ZERO);
 
 		plane.setOnChunkChanged(pos -> {
 			//System.out.println(pos);
 			world.manage(engine, pos);
 		});
+
+		TiltIndicator indicator = new TiltIndicator(new Rectangle2D(WIDTH*0.035, HEIGHT-WIDTH*0.035-WIDTH*0.07, WIDTH*0.07, WIDTH*0.07), 0, 0, 0);
 
 		// -------------------- DEBUG movement --------------------
 		Engine3D.SHOW_LINES = true;
@@ -71,12 +73,20 @@ public class MainApplication extends Application{
 		final double angle = 0.02;
 		engine.setOnKey(KeyCode.UP, () -> {
 			plane.rotateX(-angle);
+			indicator.setPitch(indicator.getPitch()-angle);
 		}, true);
 		engine.setOnKey(KeyCode.DOWN, () -> {
 			plane.rotateX(angle);
+			indicator.setPitch(indicator.getPitch()+angle);
 		}, true);
-		engine.setOnKey(KeyCode.RIGHT, () -> plane.rotateZ(angle), true);
-		engine.setOnKey(KeyCode.LEFT, () -> plane.rotateZ(-angle), true);
+		engine.setOnKey(KeyCode.RIGHT, () -> {
+			plane.rotateZ(angle);
+			indicator.setRoll(indicator.getRoll()+angle);
+		}, true);
+		engine.setOnKey(KeyCode.LEFT, () -> {
+			plane.rotateZ(-angle);
+			indicator.setRoll(indicator.getRoll()-angle);
+		}, true);
 		engine.setOnKey(KeyCode.X, () -> plane.rotateY(angle), true);
 		engine.setOnKey(KeyCode.C, () -> plane.rotateY(-angle), true);
 
@@ -107,10 +117,13 @@ public class MainApplication extends Application{
 			//gc.setStroke(Color.BLUE);
 			//gc.strokeLine(WIDTH/2, 0, WIDTH/2, HEIGHT);
 
+			indicator.render(gc);
+
 			if (this.flagMoving){
 				final double planeSpeed = 0.3;
 				Point3D vector = plane.getDirection().multiply(planeSpeed);
 				plane.move(camera, vector);
+				indicator.setYaw(plane.getRy());
 			}
 
 			stage.setTitle("FlightSim - FPS: "+engine.getFPS());
