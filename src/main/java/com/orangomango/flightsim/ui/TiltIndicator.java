@@ -1,4 +1,4 @@
-package com.orangomango.flightsim.model;
+package com.orangomango.flightsim.ui;
 
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;

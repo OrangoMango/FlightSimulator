@@ -12,14 +12,14 @@ import javafx.scene.text.TextAlignment;
 
 import com.orangomango.flightsim.model.Plane;
 import com.orangomango.flightsim.model.World;
-import com.orangomango.flightsim.model.TiltIndicator;
+import com.orangomango.flightsim.ui.TiltIndicator;
 import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.rendering3d.model.Camera;
 import com.orangomango.rendering3d.model.Light;
 
 public class MainApplication extends Application{
-	private static final int WIDTH = 720;
-	private static final int HEIGHT = 360;
+	private static final int WIDTH = 360; //720;
+	private static final int HEIGHT = 180; //360;
 
 	private static final Point3D STARTPOS = new Point3D(0, -0.9, -3.2);
 
@@ -89,8 +89,9 @@ public class MainApplication extends Application{
 		}, true);
 
 		// Move the plane
-		engine.setOnKey(KeyCode.Z, () -> this.planeSpeed -= 0.005, true);
-		engine.setOnKey(KeyCode.X, () -> this.planeSpeed += 0.005, true);
+		final double speedFactor = 0.005;
+		engine.setOnKey(KeyCode.Z, () -> this.planeSpeed -= speedFactor, true);
+		engine.setOnKey(KeyCode.X, () -> this.planeSpeed += speedFactor, true);
 
 		engine.addObject(plane.build());
 		world.manage(engine, Point3D.ZERO);
@@ -116,7 +117,7 @@ public class MainApplication extends Application{
 
 			indicator.render(gc);
 
-			if (this.planeSpeed != 0){
+			if (Math.abs(this.planeSpeed) >= speedFactor){
 				Point3D vector = plane.getDirection().multiply(this.planeSpeed);
 				plane.move(camera, vector);
 				indicator.setYaw(plane.getRy());
