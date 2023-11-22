@@ -121,6 +121,7 @@ public class MainApplication extends Application{
 				Point3D vector = plane.getDirection().multiply(this.planeSpeed);
 				plane.move(camera, vector);
 				indicator.setYaw(plane.getRy());
+				light.getCamera().move(vector);
 			}
 
 			stage.setTitle("FlightSim - FPS: "+engine.getFPS());

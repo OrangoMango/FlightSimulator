@@ -4,8 +4,7 @@ import javafx.scene.paint.Color;
 import javafx.geometry.Point3D;
 import javafx.geometry.Point2D;
 
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 import com.orangomango.rendering3d.Engine3D;
 import com.orangomango.rendering3d.model.Mesh;
@@ -17,7 +16,7 @@ public class World{
 
 	public static final double PLANE_SIZE = 0.5;
 	public static final int CHUNKS = 33;
-	public static final float FREQUENCY = 0.3f;
+	public static final float FREQUENCY = 0.2f;
 	public static final double HEIGHT = 1.5;
 
 	public World(Point3D pos){
